@@ -1,0 +1,11 @@
+## to install the depency  
+ex3cut "pip install -r requirements.txt" 
+
+## to execute the application 
+execute python app.py
+
+## to create database and table 
+ex3cute python database.py
+
+## to retrive the data
+execute the data_retrieve.py file 

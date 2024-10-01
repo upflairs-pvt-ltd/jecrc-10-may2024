@@ -1,9 +1,11 @@
 from flask import Flask,render_template ,url_for ,request
 import joblib 
 import pandas as pd 
-df = pd.read_csv('models\label_data.csv')
-std_scaler = joblib.load('models\std_scaler.lb')
-model = joblib.load('models\kmeans.lb')
+import sqlite3
+
+df = pd.read_csv(r'models\label_data.csv')
+std_scaler = joblib.load(r'models\std_scaler.lb')
+model = joblib.load(r'models\kmeans.lb')
 
 app = Flask(__name__)
 
@@ -34,6 +36,16 @@ def predict():
         unseen_data = [[N,P,k,t,h,ph,r]] 
         transformed_data = std_scaler.transform(unseen_data)
         cluster_no = model.predict(transformed_data)[0]
+
+        ## code for insert data into database 
+        conn = sqlite3.connect('farmer.db')
+        data_to_be_inserted = (N,P,k,t,h,ph,r,cluster_no)
+        insertion_query = "insert into farmerdata (N,P,k,t,h,p,r,prediction) values(?,?,?,?,?,?,?,?)"
+        cursor_obj = conn.cursor()
+        cursor_obj.execute(insertion_query,data_to_be_inserted)
+        conn.commit() 
+        print("successfully inserted!")
+
         filter_cluster_data = df[df['cluster_no'] == cluster_no]
         crops = list(filter_cluster_data['label'].unique())
         return render_template('output.html',suggested_crops=crops)  
